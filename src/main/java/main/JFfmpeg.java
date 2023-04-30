@@ -412,26 +412,55 @@ public class JFfmpeg extends JFrame {
 
 				else {
 
-					if (comandos.contains("-good") || comandos.contains("-bad")) {
+					if (verSiguienteDato("-y", true).endsWith(".gif")) {
 
-						if (comandos.contains("-good")) {
+						if (comandos.contains("-good") || comandos.contains("-bad")) {
 
-							buenaCalidad();
+							if (comandos.contains("-good")) {
+
+								buenaCalidad();
+
+							}
+
+							if (comandos.contains("-bad")) {
+
+								malaCalidad();
+
+							}
 
 						}
 
-						if (comandos.contains("-bad")) {
+						else {
 
-							command.add("-pix_fmt");
-
-							command.add("rgb24");
+							buenaCalidad();
 
 						}
 
 					}
 
 					else {
-						buenaCalidad();
+
+						if (comandos.contains("-good") || comandos.contains("-bad")) {
+
+							if (comandos.contains("-good")) {
+
+								malaCalidad();
+
+							}
+
+							if (comandos.contains("-bad")) {
+
+								buenaCalidad();
+
+							}
+
+						}
+
+						else {
+
+							malaCalidad();
+
+						}
 
 					}
 
@@ -502,6 +531,12 @@ public class JFfmpeg extends JFrame {
 			}
 
 		}
+	}
+
+	private static void malaCalidad() {
+		command.add("-pix_fmt");
+
+		command.add("rgb24");
 	}
 
 	private static void buenaCalidad() {
