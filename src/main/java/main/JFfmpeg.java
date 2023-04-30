@@ -508,11 +508,19 @@ public class JFfmpeg extends JFrame {
 
 	private static String calcularNomrbre() {
 
-		String salida;
+		String salida = "";
 
-		salida = verSiguienteDato("-i", true).substring(0, verSiguienteDato("-i", true).lastIndexOf(".")) + "-output"
-				+ verSiguienteDato("-i", true).substring(verSiguienteDato("-i", true).lastIndexOf("."),
-						verSiguienteDato("-i", true).length());
+		try {
+
+			salida = verSiguienteDato("-i", true).substring(0, verSiguienteDato("-i", true).lastIndexOf("."))
+					+ "-output" + verSiguienteDato("-i", true).substring(verSiguienteDato("-i", true).lastIndexOf("."),
+							verSiguienteDato("-i", true).length());
+
+		}
+
+		catch (Exception e) {
+
+		}
 
 		return salida;
 
