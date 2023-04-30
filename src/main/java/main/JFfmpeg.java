@@ -33,18 +33,23 @@ public class JFfmpeg extends JFrame {
 		try {
 
 			if (filtro) {
+
 				resultado = comandos.get(comandos.indexOf(search) + 1);
 
 			}
 
 			else {
+
 				resultado = comandos.get(comandos.indexOf(search));
+
 			}
 
 		}
 
 		catch (Exception e) {
+
 			resultado = "";
+
 		}
 
 		return resultado;
@@ -119,6 +124,12 @@ public class JFfmpeg extends JFrame {
 
 	public static void main(String[] args) throws IOException {
 
+		jffmpeg(args);
+
+	}
+
+	public static void jffmpeg(String[] args) throws IOException {
+
 		String salida = "";
 
 		String ayuda = "Bad arguments\nUse the argument -h to view help";
@@ -157,7 +168,7 @@ public class JFfmpeg extends JFrame {
 				System.out.println("\n");
 
 				System.out.println(
-						"-ss  -> Time Start \n\n \t Option is considered an actual timestamp,\n\n\t and is not offset by the start time of the file. \n\n\t This matters only for files which do not start\n\n\t from timestamp 0, such as transport streams.");
+						"-ss -> Time Start \n\n \t Option is considered an actual timestamp,\n\n\t and is not offset by the start time of the file. \n\n\t This matters only for files which do not start\n\n\t from timestamp 0, such as transport streams.");
 
 				System.out.println("\n");
 
@@ -174,85 +185,53 @@ public class JFfmpeg extends JFrame {
 
 				System.out.println("\n");
 
-				System.out.println("-------------------------Watermarks-------------------------");
+				System.out.println("-------------------------Watermarks------------------------------------------");
 
 				System.out.println("\n");
 
 				System.out.println("\t-watermark  -> Input (path of watermark file).");
 
-				System.out.println("\n");
-
-				System.out.println("\t---------------------Position---------------------");
-
-				System.out.println("\n");
+				System.out.println("\n\t---------------------Position----------------------------");
 
 				System.out.println(
-						"\t-pos-watermark -> Position of the watermark file. \n\n\t\t----------------Values----------------\n\n \t\t\t0 -> UP - LEFT\n"
+						"\n\t\t-pos-watermark -> Position of the watermark file. \n\n\t\t----------------Values---------------------------\n\n \t\t\t0 -> UP - LEFT\n"
 								+ "\n" + "\t\t\t1 -> UP - CENTER\n" + "\n" + "\t\t\t2 -> UP - RIGHT\n" + "\n"
 								+ "\t\t\t3 -> MIDDLE - LEFT\n" + "\n" + "\t\t\t4 -> MIDDLE - CENTER\n" + "\n"
 								+ "\t\t\t5 -> MIDDLE - RIGHT\n" + "\n" + "\t\t\t6 -> DOWN - LEFT\n" + "\n"
 								+ "\t\t\t7 -> DOWN - CENTER\n" + "\n" + "\t\t\t8 -> DOWN - RIGHT");
 
-				System.out.println("\n");
-
-				System.out.println("\t---------------------Color---------------------");
-
-				System.out.println("\n");
+				System.out.println("\n\t\t----------------Color-----------------------------");
 
 				System.out.println(
-						"\t\t--color-watermark -> Watermark text color.\n\n\t\tIMPORTANT: You can put colors in html \n\n\t\t---------------Values---------------\n");
+						"\n \t\t\t--color-watermark -> Watermark text color.\n\n\t\t\tIMPORTANT: You can put colors in html \n\n\t\t---------------Values-----------------------------\n");
 
 				System.out.println(
 						"\t\t\tblack\n\n\t\t\twhite\n\n\t\t\tred\n\n\t\t\tblue\n\n\t\t\tyellow\n\n\t\t\tlime\n\n\t\t\tpink\n\n\t\t\tviolet\n\n\t\t\tgray\n\n\t\t\tcyan\n\n\t\t\tdarkblue\n\n\t\t\tlightblue\n\n\t\t\tpurple\n\n\t\t\tMagenta\n\n\t\t\tSilver\n\n\t\t\torange\n\n\t\t\tbrown\n\n\t\t\tmaroon"
 								+ "\n\n\t\t\tgreen\n\n\t\t\tolive\n\n\t\t\taquamarine\n\n\t\t\tgold\n\n\t\t\tdarkorange\n\n\t\t\t#CFB53B (Old gold)\n\n\t\t\tchocolate\n\n\t\t\t#D4AF37 (Metallic gold)\n\n\t\t\tturquoise"
 								+ "\n\n\t\t\tteal\n\n\t\t\ttseagreen\n\n\t\t\t#78866B (Camouflage green)\n\n\t\t\t#CD7F32(bronze)\n\n\t\t\t#F3E5AB (Medium champagne)");
 
-				System.out.println("\n");
+				System.out.println("\n\t---------------------Text-------------------------------");
 
-				System.out.println("\t---------------------Text---------------------");
+				System.out.println("\n\t\t-text-watermark -> Watermark text");
 
-				System.out.println("\n");
+				System.out.println("\n\t\t-font-size-text-watermark -> Watermark Text size");
 
-				System.out.println("\t\t-text-watermark -> Watermark text");
+				System.out.println("\n\t---------------------Quality----------------------------");
 
-				System.out.println("\n");
+				System.out.println("\n\t\t-good -> Set good quality");
 
-				System.out.println("\t\t---------------------Color Text---------------------");
+				System.out.println("\n\t\t-bad  -> Set low quality\n");
 
-				System.out.println("\n");
+				System.out.println("\t\t-fps  -> Frames per Second\n");
 
-				System.out.println("\t\t\t-font-size-text-watermark -> Watermark Text size");
+				System.out.println("\t---------------------Output------------------------------");
 
-				System.out.println("\n");
+				System.out.println("\n\t\t-y  -> Overwrite output files");
 
-				System.out.println("\t---------------------Quality---------------------");
-
-				System.out.println("\n");
-
-				System.out.println("\t\t-good -> Set good quality");
-
-				System.out.println("\n");
-
-				System.out.println("\t\t-bad -> Set low quality\n");
-
-				System.out.println("\t\t-fps -> Frames per Second");
-
-				System.out.println("\n");
-
-				System.out.println("\t---------------------Output---------------------");
-
-				System.out.println("\n");
-
-				System.out.println("\t\t-y  -> Overwrite output files");
-
-				System.out.println("\n");
-
-				System.out.println("\t\tYou can put the output file path directly\n\n\t\twithout the -y argument");
-
-				System.out.println("\n");
+				System.out.println("\n\t\tYou can put the output file path directly\n\n\t\twithout the -y argument");
 
 				System.out.println(
-						"\t\tYou can leave this option without arguments\n\n\t\tand without output file, since\n\n\t\tthe program will save the output file\n\n\t\tas \"file-output\" with its corresponding extension");
+						"\n\t\tYou can leave this option without arguments\n\n\t\tand without output file, since\n\n\t\tthe program will save the output file\n\n\t\tas \"file-output\" with its corresponding extension");
 
 				System.out.println("\n");
 
@@ -525,15 +504,18 @@ public class JFfmpeg extends JFrame {
 			}
 
 		}
-
 	}
 
 	private static String calcularNomrbre() {
+
 		String salida;
+
 		salida = verSiguienteDato("-i", true).substring(0, verSiguienteDato("-i", true).lastIndexOf(".")) + "-output"
 				+ verSiguienteDato("-i", true).substring(verSiguienteDato("-i", true).lastIndexOf("."),
 						verSiguienteDato("-i", true).length());
+
 		return salida;
+
 	}
 
 	private static String saberSeparador(String os2) {
