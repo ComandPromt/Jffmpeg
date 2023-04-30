@@ -414,30 +414,24 @@ public class JFfmpeg extends JFrame {
 
 					if (comandos.contains("-good") || comandos.contains("-bad")) {
 
-						if (comandos.contains("-bad")) {
+						if (comandos.contains("-good")) {
 
-							command.add("-filter_complex");
-
-							String fps = "25";
-
-							if (!verSiguienteDato("-fps", false).equals("")) {
-
-								fps = verSiguienteDato("-fps", true);
-
-							}
-
-							command.add("[0:v] fps=" + fps
-									+ ",scale=w=720:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1");
+							buenaCalidad();
 
 						}
 
-						if (comandos.contains("-good")) {
+						if (comandos.contains("-bad")) {
 
 							command.add("-pix_fmt");
 
 							command.add("rgb24");
 
 						}
+
+					}
+
+					else {
+						buenaCalidad();
 
 					}
 
@@ -463,17 +457,19 @@ public class JFfmpeg extends JFrame {
 								salida = comandos.getLast();
 
 							}
+
 						}
 
 						else {
-							salida = calcularNomrbre();
+
+							salida = calcularNombre();
 						}
 
 					}
 
 					catch (Exception e) {
 
-						salida = calcularNomrbre();
+						salida = calcularNombre();
 
 					}
 
@@ -493,6 +489,8 @@ public class JFfmpeg extends JFrame {
 
 					abrirCarpeta("file://" + salida);
 
+					abrirCarpeta("file://" + salida);
+
 				}
 
 				catch (Exception e) {
@@ -506,7 +504,24 @@ public class JFfmpeg extends JFrame {
 		}
 	}
 
-	private static String calcularNomrbre() {
+	private static void buenaCalidad() {
+
+		command.add("-filter_complex");
+
+		String fps = "25";
+
+		if (!verSiguienteDato("-fps", false).equals("")) {
+
+			fps = verSiguienteDato("-fps", true);
+
+		}
+
+		command.add("[0:v] fps=" + fps
+				+ ",scale=w=720:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1");
+
+	}
+
+	private static String calcularNombre() {
 
 		String salida = "";
 
@@ -528,15 +543,15 @@ public class JFfmpeg extends JFrame {
 
 	private static String saberSeparador(String os2) {
 
-		if (os.contains("inux")) {
+		if (os.contains("indows")) {
 
-			return "/";
+			return "\\";
 
 		}
 
 		else {
 
-			return "\\";
+			return "/";
 
 		}
 
