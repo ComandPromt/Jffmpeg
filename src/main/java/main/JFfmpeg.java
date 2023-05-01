@@ -130,6 +130,8 @@ public class JFfmpeg extends JFrame {
 
 	public static void jffmpeg(String[] args) throws IOException {
 
+		command.clear();
+
 		String salida = "";
 
 		String ayuda = "Bad arguments\nUse the argument -h to view help";
@@ -515,8 +517,6 @@ public class JFfmpeg extends JFrame {
 				try {
 
 					ffmpeg.run(command);
-
-					abrirCarpeta("file://" + salida);
 
 					abrirCarpeta("file://" + salida);
 
