@@ -12,21 +12,15 @@ public class JFfmpeg extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 
-	static String directorioActual;
+	private String os = System.getProperty("os.name");
 
-	static String os = System.getProperty("os.name");
+	private String separador;
 
-	static String separador;
+	private static LinkedList<String> comandos = new LinkedList<String>();
 
-	String video;
+	private LinkedList<String> command = new LinkedList<String>();
 
-	static LinkedList<String> comandos = new LinkedList<String>();
-
-	static LinkedList<String> command = new LinkedList<String>();
-
-	int busqueda;
-
-	static String verSiguienteDato(String search, boolean filtro) {
+	private static String verSiguienteDato(String search, boolean filtro) {
 
 		String resultado;
 
@@ -56,7 +50,7 @@ public class JFfmpeg extends JFrame {
 
 	}
 
-	public static void abrirCarpeta(String ruta) throws IOException {
+	private void abrirCarpeta(String ruta) throws IOException {
 
 		if (ruta != null && !ruta.equals("") && !ruta.isEmpty()) {
 
@@ -86,7 +80,7 @@ public class JFfmpeg extends JFrame {
 
 	}
 
-	static int comando(String index) {
+	private int comando(String index) {
 
 		int busqueda = buscarComando(index);
 
@@ -102,7 +96,7 @@ public class JFfmpeg extends JFrame {
 
 	}
 
-	static int buscarComando(String filtro) {
+	private int buscarComando(String filtro) {
 
 		int indice = -1;
 
@@ -124,13 +118,15 @@ public class JFfmpeg extends JFrame {
 
 	public static void main(String[] args) throws IOException {
 
-		jffmpeg(args);
+		new JFfmpeg().jffmpeg(args);
 
 	}
 
-	public static void jffmpeg(String[] args) throws IOException {
+	public void jffmpeg(String[] args) throws IOException {
 
 		command.clear();
+
+		comandos.clear();
 
 		String salida = "";
 
@@ -531,15 +527,18 @@ public class JFfmpeg extends JFrame {
 			}
 
 		}
+
 	}
 
-	private static void malaCalidad() {
+	private void malaCalidad() {
+
 		command.add("-pix_fmt");
 
 		command.add("rgb24");
+
 	}
 
-	private static void buenaCalidad() {
+	private void buenaCalidad() {
 
 		command.add("-filter_complex");
 
@@ -576,7 +575,7 @@ public class JFfmpeg extends JFrame {
 
 	}
 
-	private static String saberSeparador(String os2) {
+	private String saberSeparador(String os2) {
 
 		if (os.contains("indows")) {
 
