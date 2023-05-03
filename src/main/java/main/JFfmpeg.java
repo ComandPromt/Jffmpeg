@@ -550,8 +550,16 @@ public class JFfmpeg extends JFrame {
 
 		}
 
-		command.add("[0:v] fps=" + fps
-				+ ",scale=w=720:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1");
+		String ancho = verSiguienteDato("-width", true);
+
+		if (ancho == null || ancho.isEmpty()) {
+
+			ancho = "720";
+
+		}
+
+		command.add("[0:v] fps=" + fps + ",scale=w=" + ancho
+				+ ":h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1");
 
 	}
 
