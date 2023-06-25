@@ -130,7 +130,7 @@ public class JFfmpeg extends JFrame {
 
 		String salida = "";
 
-		String ayuda = "Bad arguments\nUse the argument -h to view help";
+		String ayuda = "\n---------------------------------------------------------------\n\nBad arguments\n\nUse the argument -h to view help\n";
 
 		if (args.length == 0) {
 
