@@ -404,6 +404,10 @@ public class JFfmpeg extends JFrame {
 
 					catch (Exception e) {
 
+						System.out.println(ayuda + "\n\n");
+
+						e.printStackTrace();
+
 					}
 
 				}
@@ -520,7 +524,9 @@ public class JFfmpeg extends JFrame {
 
 				catch (Exception e) {
 
-					System.out.println(ayuda);
+					System.out.println(ayuda + "\n\n");
+
+					e.printStackTrace();
 
 				}
 
