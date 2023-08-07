@@ -1,17 +1,26 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>Video-2-GIF-GUI</groupId>
-	<artifactId>Video-2-GIF-GUI</artifactId>
+	
+	<groupId>JFfmpeg</groupId>
+	
+	<artifactId>JFfmpeg</artifactId>
+	
 	<version>1.0.0-RC4</version>
-	<name>Video-2-GIF-GUI</name>
+	
+	<name>JFfmpeg</name>
 	
 	<dependencies>
 		  		
 		<dependency>
+    			
     			<groupId>net.bramp.ffmpeg</groupId>
+    			
     			<artifactId>ffmpeg</artifactId>
+    			
     			<version>0.6.2</version>
+		
 		</dependency>
 				
 	</dependencies>

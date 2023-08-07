@@ -116,13 +116,7 @@ public class JFfmpeg extends JFrame {
 
 	}
 
-	public static void main(String[] args) throws IOException {
-
-		new JFfmpeg().jffmpeg(args);
-
-	}
-
-	public void jffmpeg(String[] args) throws IOException {
+	public void jffmpeg(String[] args, boolean folder) throws IOException {
 
 		command.clear();
 
@@ -494,6 +488,7 @@ public class JFfmpeg extends JFrame {
 						else {
 
 							salida = calcularNombre();
+
 						}
 
 					}
@@ -518,8 +513,6 @@ public class JFfmpeg extends JFrame {
 
 					ffmpeg.run(command);
 
-					abrirCarpeta("file://" + salida);
-
 				}
 
 				catch (Exception e) {
@@ -527,6 +520,12 @@ public class JFfmpeg extends JFrame {
 					System.out.println(ayuda + "\n\n");
 
 					e.printStackTrace();
+
+				}
+
+				if (folder && !salida.isEmpty()) {
+
+					abrirCarpeta("file://" + salida);
 
 				}
 
