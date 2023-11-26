@@ -32,15 +32,11 @@ public class JFfmpeg extends JFrame {
 
 	private boolean posicionarWatermark;
 
-	public JFfmpeg() {
-
-		os = System.getProperty("os.name");
-
-	}
+	private boolean buenaCalidad;
 
 	private static String verSiguienteDato(String search, boolean filtro) {
 
-		String resultado;
+		String resultado = "";
 
 		try {
 
@@ -56,15 +52,15 @@ public class JFfmpeg extends JFrame {
 
 			}
 
+			resultado = resultado.trim();
+
 		}
 
 		catch (Exception e) {
 
-			resultado = "";
-
 		}
 
-		return resultado.trim();
+		return resultado;
 
 	}
 
@@ -139,6 +135,90 @@ public class JFfmpeg extends JFrame {
 		}
 
 		return indice;
+
+	}
+
+	private void saberSiEsGif() {
+
+		if (marcaDeAgua && (verSiguienteDato("-y", true).endsWith(".gif"))) {
+
+			command.add("-c:v");
+
+			command.add("gif");
+
+		}
+
+	}
+
+	private void ponerCalidad() {
+
+		if (comandos.contains("-good") || comandos.contains("-bad")) {
+
+			if (comandos.contains("-good")) {
+
+				buenaCalidad();
+
+			}
+
+			else if (comandos.contains("-bad")) {
+
+				malaCalidad();
+
+			}
+
+		}
+
+		else {
+
+			buenaCalidad();
+
+		}
+
+	}
+
+	private String salida(String salida) {
+
+		int busqueda = comando("-y");
+
+		if (busqueda == -1) {
+
+			try {
+
+				separador = saberSeparador(os);
+
+				File test = new File(comandos.getLast().substring(0, comandos.getLast().lastIndexOf(separador)));
+
+				if (test.isDirectory()) {
+
+					command.add("-y");
+
+					salida = comandos.getLast();
+
+					if (new File(salida).exists()) {
+
+						command.add(salida);
+
+					}
+
+				}
+
+			}
+
+			catch (Exception e) {
+
+				fallo = true;
+
+			}
+
+		}
+
+		else {
+
+			salida = verSiguienteDato("-y", true);
+
+		}
+
+		return salida;
 
 	}
 
@@ -317,6 +397,350 @@ public class JFfmpeg extends JFrame {
 		pos[1] = y;
 
 		return pos;
+
+	}
+
+	private void bits() {
+
+		if (!verSiguienteDato("-bits", false).equals("")) {
+
+			command.add("-b:v");
+
+			command.add(verSiguienteDato("-bits", true));
+
+		}
+
+	}
+
+	private void calidad() {
+
+		command.add("-q:v");
+
+		if (!verSiguienteDato("-quality", false).equals("")) {
+
+			command.add(verSiguienteDato("-quality", true));
+
+		}
+
+		else {
+
+			command.add("16");
+
+		}
+
+	}
+
+	private void reverse() {
+
+		if (!verSiguienteDato("-reverse", false).equals("")) {
+
+			int num1 = command.indexOf("-filter_complex") + 1;
+
+			if (!buenaCalidad && num1 > -1) {
+
+				command.set(num1, command.get(num1) + ",reverse");
+
+			}
+
+			else {
+
+				command.set(num1, command.get(num1) + ",[reversed];[reversed]reverse");
+
+			}
+
+		}
+	}
+
+	private String limpiar(String datoPosWatermark) {
+
+		datoPosWatermark = datoPosWatermark.replace("X", "x");
+
+		datoPosWatermark = datoPosWatermark.replace("*", "x");
+
+		return datoPosWatermark;
+
+	}
+
+	private String calcularPosicionDeMarcaDeAgua(int index) {
+
+		String resultado = "";
+
+		switch (index) {
+
+		case 1:
+
+			resultado = "overlay=x=10:y=5";
+
+			break;
+
+		case 2:
+
+			resultado = "overlay=x=(main_w-overlay_w)/2:y=5";
+
+			break;
+
+		case 3:
+
+			resultado = "overlay=x=(main_w-overlay_w-10):y=5";
+
+			break;
+
+		case 4:
+
+			resultado = "overlay=x=10:y=(main_h-overlay_h)/2";
+
+			break;
+
+		case 5:
+
+			resultado = "overlay=x=(main_w-overlay_w)/2:y=(main_h-overlay_h)/2";
+
+			break;
+
+		case 6:
+
+			resultado = "overlay=x=(main_w-overlay_w-10):y=(main_h-overlay_h)/2";
+
+			break;
+
+		case 7:
+
+			resultado = "overlay=x=10:y=(main_h-overlay_h-5)";
+
+			break;
+
+		case 8:
+
+			resultado = "overlay=x=(main_w-overlay_w)/2:y=(main_h-overlay_h-5)";
+
+			break;
+
+		default:
+
+			resultado = "overlay=main_w-overlay_w-10:main_h-overlay_h-5";
+
+			break;
+
+		}
+
+		return resultado;
+
+	}
+
+	private String saberComandos(LinkedList<String> lista) {
+
+		String salida = "ffmpeg ";
+
+		String texto;
+
+		for (int i = 0; i < lista.size(); i++) {
+
+			texto = lista.get(i).trim();
+
+			if (!texto.startsWith("-")) {
+
+				texto = "\"" + texto + "\"";
+
+			}
+
+			salida += texto + " ";
+
+		}
+
+		salida = salida.trim();
+
+		return salida;
+
+	}
+
+	private void malaCalidad() {
+
+		boolean entro = false;
+
+		if (!verSiguienteDato("-crop", false).equals("")) {
+
+			entro = true;
+
+			command.add("-vf");
+
+		}
+
+		if (entro && !verSiguienteDato("-bn", false).equals("")) {
+
+			command.add("crop=" + verSiguienteDato("-crop", true).replace("x", ":") + ",format=gray");
+
+		}
+
+		else if (entro) {
+
+			command.add("crop=" + verSiguienteDato("-crop", true).replace("x", ":"));
+
+		}
+
+		else if (!entro && !verSiguienteDato("-bn", false).equals("")) {
+
+			command.add("-vf");
+
+			command.add("format=gray");
+
+		}
+
+		else {
+
+			command.add("-pix_fmt");
+
+			command.add("rgba");
+
+		}
+
+		if (!verSiguienteDato("-width", false).equals("") && !verSiguienteDato("-height", false).equals("")) {
+
+			int ancho = Integer.parseInt(verSiguienteDato("-width", true));
+
+			int alto = Integer.parseInt(verSiguienteDato("-height", true));
+
+			if (ancho > 0 && alto > 0) {
+
+				command.add("-s");
+
+				command.add(ancho + "x" + alto);
+
+			}
+
+		}
+
+	}
+
+	private void buenaCalidad() {
+
+		buenaCalidad = true;
+
+		command.add("-filter_complex");
+
+		String fps = "25";
+
+		if (!verSiguienteDato("-fps", false).equals("")) {
+
+			fps = verSiguienteDato("-fps", true);
+
+		}
+
+		boolean entro = false;
+
+		String ancho = verSiguienteDato("-width", true);
+
+		String alto = verSiguienteDato("-height", true);
+
+		if (ancho == null || ancho.isEmpty()) {
+
+			ancho = "720";
+
+		}
+
+		if (alto == null || alto.isEmpty() || alto.equals("-i")) {
+
+			alto = "-1";
+
+		}
+
+		String filtro = "[0:v]fps=" + fps + ",scale=w=" + ancho + ":h=" + alto
+				+ ",split[a][b];[a]palettegen=stats_mode=single[p];[b][p]paletteuse=new=1";
+
+		if (!verSiguienteDato("-crop", false).equals("")) {
+
+			filtro += calcularCrop(verSiguienteDato("-crop", true), true);
+
+		}
+
+		if (!verSiguienteDato("-bn", false).equals("")) {
+
+			entro = true;
+
+			filtro += ",format=gray[output]";
+
+		}
+
+		command.add(filtro);
+
+		if (entro) {
+
+			command.add("-map");
+
+			command.add("[output]");
+
+		}
+
+	}
+
+	public static int[] buscarPosiciones(String cadenaBuscar, String cadenaPrincipal) {
+
+		List<Integer> posiciones = new ArrayList<>();
+
+		int posicion = cadenaPrincipal.indexOf(cadenaBuscar);
+
+		while (posicion != -1) {
+
+			posiciones.add(posicion);
+
+			posicion = cadenaPrincipal.indexOf(cadenaBuscar, posicion + 1);
+
+		}
+
+		int[] resultado = new int[posiciones.size()];
+
+		for (int i = 0; i < resultado.length; i++) {
+
+			resultado[i] = posiciones.get(i);
+
+		}
+
+		return resultado;
+
+	}
+
+	private String calcularCrop(String dato, boolean coma) {
+
+		String resultado = "";
+
+		try {
+
+			if (coma) {
+
+				resultado = ",";
+
+			}
+
+			int[] posiciones = buscarPosiciones("x", dato);
+
+			resultado += "crop=x=" + dato.substring(0, posiciones[0]) + ":h="
+					+ dato.substring(posiciones[0] + 1, posiciones[1]) + ":x=";
+
+			resultado += dato.substring(posiciones[1] + 1, posiciones[2]) + ":y="
+					+ dato.substring(posiciones[2] + 1, dato.length());
+
+		}
+
+		catch (Exception e) {
+
+		}
+
+		return resultado;
+
+	}
+
+	private String saberSeparador(String os2) {
+
+		if (os.contains("indows")) {
+
+			return "\\";
+
+		}
+
+		else {
+
+			return "/";
+
+		}
 
 	}
 
@@ -502,7 +926,7 @@ public class JFfmpeg extends JFrame {
 
 	}
 
-	public void jffmpeg(String[] args, boolean folder) throws IOException {
+	public JFfmpeg(String[] args, boolean folder) throws IOException {
 
 		os = System.getProperty("os.name");
 
@@ -526,382 +950,381 @@ public class JFfmpeg extends JFrame {
 
 		else {
 
-			for (int i = 0; i < args.length; i++) {
+			try {
 
-				comandos.add(args[i]);
+				for (int i = 0; i < args.length; i++) {
 
-			}
+					comandos.add(args[i]);
 
-			if (comandos.contains("-h") || comandos.contains("-help")) {
+				}
 
-				help();
+				if (comandos.contains("-h") || comandos.contains("-help")) {
 
-			}
+					help();
 
-			else {
+				}
 
-				posicionarWatermark = false;
-
-				FFmpeg ffmpeg = new FFmpeg();
-
-				comando("-i");
-
-				comando("-ss");
-
-				comando("-t");
-
-				comando("-r");
-
-				if (comandos.contains("-watermark")) {
-
-					marcaDeAgua = true;
-
-					command.add("-i");
-
-					command.add(verSiguienteDato("-watermark", true));
-
-					command.add("-filter_complex");
-
-					String bn = "";
-
-					if (!verSiguienteDato("-bn", false).equals("")) {
-
-						bn = ",format=gray";
-
-					}
+				else {
 
 					try {
 
-						String posicionWatermark = ":x=(w-text_w)/2:y=(h-text_h)-5";
+						posicionarWatermark = false;
 
-						if (!verSiguienteDato("--pos-text-watermark", false).equals("")) {
+						buenaCalidad = false;
 
-							String cadena = verSiguienteDato("--pos-text-watermark", true);
+						FFmpeg ffmpeg = new FFmpeg();
 
-							cadena = limpiar(cadena);
+						comando("-i");
 
-							if (cadena.contains("x")) {
+						comando("-ss");
 
-								try {
+						comando("-t");
 
-									posicionWatermark = ":x=" + cadena.substring(0, cadena.indexOf("x")) + ":y="
-											+ cadena.substring(cadena.indexOf("x") + 1, cadena.length());
+						comando("-r");
 
-								}
+						if (comandos.contains("-watermark")) {
 
-								catch (Exception e1) {
+							marcaDeAgua = true;
 
-									fallo = true;
+							command.add("-i");
 
-								}
+							command.add(verSiguienteDato("-watermark", true));
 
-							}
+							command.add("-filter_complex");
 
-							else {
+							String bn = "";
 
-								try {
+							if (!verSiguienteDato("-bn", false).equals("")) {
 
-									String[] pos = saberPosicion(
-											Integer.parseInt(verSiguienteDato("--pos-text-watermark", true)));
-
-									posicionWatermark = ":x=" + pos[0] + ":y=" + pos[1];
-
-								}
-
-								catch (Exception e) {
-
-									fallo = true;
-
-								}
+								bn = ",format=gray";
 
 							}
 
-						}
+							try {
 
-						String fps = "[0]fps=25";
+								String posicionWatermark = ":x=(w-text_w)/2:y=(h-text_h)-5";
 
-						String scale = "";
+								if (!verSiguienteDato("--pos-text-watermark", false).equals("")) {
 
-						String fontsize = "250";
+									String cadena = verSiguienteDato("--pos-text-watermark", true);
 
-						String colorWatermark = "black";
+									cadena = limpiar(cadena);
 
-						String texto = "";
+									if (cadena.contains("x")) {
 
-						if (!verSiguienteDato("-fps", false).equals("")) {
-
-							fps = "[0]fps=" + verSiguienteDato("-fps", true);
-
-						}
-
-						if (!verSiguienteDato("-s", false).equals("")) {
-
-							String dato = verSiguienteDato("-s", true);
-
-							dato = limpiar(dato);
-
-							scale = ",scale=" + dato.replace("x", ":");
-
-						}
-
-						if (!verSiguienteDato("-font-size-text-watermark", false).equals("")) {
-
-							fontsize = verSiguienteDato("-font-size-text-watermark", true);
-
-						}
-
-						if (!verSiguienteDato("-text-watermark", false).equals("")) {
-
-							texto = verSiguienteDato("-text-watermark", true);
-
-						}
-
-						if (!texto.isEmpty() && !texto.replace(" ", "").isEmpty() && fontsize.equals("0")) {
-
-							fontsize = "25";
-
-						}
-
-						if (!verSiguienteDato("--color-watermark-text", false).equals("")) {
-
-							colorWatermark = verSiguienteDato("--color-watermark-text", true);
-
-						}
-
-						String posWatermarkX = "0";
-
-						String posWatermarkY = "0";
-
-						String datoPosWatermark = verSiguienteDato("--pos-watermark", true);
-
-						datoPosWatermark = limpiar(datoPosWatermark);
-
-						if (!datoPosWatermark.equals("")) {
-
-							if (datoPosWatermark.contains("x")) {
-
-								try {
-
-									posWatermarkX = Integer.toString((Integer
-											.parseInt(datoPosWatermark.substring(0, datoPosWatermark.indexOf("x")))));
-
-									posWatermarkY = Integer.toString((Integer.parseInt(datoPosWatermark
-											.substring(datoPosWatermark.indexOf("x") + 1, datoPosWatermark.length()))));
-
-								}
-
-								catch (Exception e) {
-
-									fallo = true;
-
-								}
-
-							}
-
-							else {
-
-								posicionarWatermark = true;
-
-								String[] pos1 = saberPosicion(
-										Integer.parseInt(verSiguienteDato("--pos-watermark", true)));
-
-								posWatermarkX = pos1[0];
-
-								posWatermarkY = pos1[1];
-
-							}
-
-						}
-
-						String fuente = "";
-
-						if (!verSiguienteDato("--font-text-watermark", false).equals("")) {
-
-							String archivoFuente = verSiguienteDato("--font-text-watermark", true);
-
-							if (new File(archivoFuente).exists()) {
-
-								fuente = ":fontfile=" + archivoFuente;
-
-							}
-
-						}
-
-						String blur = ",";
-
-						if (!verSiguienteDato("-blur", false).equals("")) {
-
-							blur = ",boxblur=luma_radius=10:chroma_radius=10[blurred];[blurred]";
-
-						}
-
-						String crop = "";
-
-						if (!verSiguienteDato("-crop", false).equals("")) {
-
-							crop = calcularCrop(verSiguienteDato("-crop", true), true);
-
-						}
-
-						if (verSiguienteDato("-watermarkSize", false).equals("")) {
-
-							crop = calcularCrop(verSiguienteDato("-crop", true), false) + ",";
-
-							command.add(fps + scale + blur + crop + "overlay=x=" + posWatermarkX + ":y=" + posWatermarkY
-									+ ":format=auto,drawtext=text='" + texto + "':fontsize=" + fontsize + fuente
-									+ ":fontcolor=" + colorWatermark + posicionWatermark
-									+ ",split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" + bn);
-
-						}
-
-						else {
-
-							int widthWatermark = Integer.parseInt(verSiguienteDato("-watermarkSize", true).substring(0,
-									verSiguienteDato("-watermarkSize", true).indexOf("x")));
-
-							int heightWatermark = Integer.parseInt(verSiguienteDato("-watermarkSize", true).substring(
-									verSiguienteDato("-watermarkSize", true).indexOf("x") + 1,
-									verSiguienteDato("-watermarkSize", true).length()));
-
-							if (blur.equals(",")) {
-
-								blur = "";
-
-							}
-
-							if (!blur.equals("") && marcaDeAgua) {
-
-								blur = blur.replace("[blurred];[blurred]", "[blurred];");
-
-								String comando = fps + blur + "[1]scale=" + widthWatermark + ":" + heightWatermark
-										+ "[watermark];";
-
-								String comprobacion = "";
-
-								if (!blur.isEmpty()) {
-
-									comprobacion = "[blurred]";
-
-								}
-
-								scale = ",scale=w="
-										+ Integer.parseInt(scale.substring(scale.indexOf("=") + 1, scale.indexOf(":")))
-										+ ":h="
-										+ Integer.parseInt(scale.substring(scale.indexOf(":") + 1, scale.length()));
-
-								if (!verSiguienteDato("-bn", false).equals("")) {
-
-									int opcion = 1;
-
-									try {
-
-										opcion = Integer.parseInt(verSiguienteDato("-bn", true));
+										posicionWatermark = ":x=" + cadena.substring(0, cadena.indexOf("x")) + ":y="
+												+ cadena.substring(cadena.indexOf("x") + 1, cadena.length());
 
 									}
 
-									catch (Exception e) {
+									else {
+
+										String[] pos = saberPosicion(
+												Integer.parseInt(verSiguienteDato("--pos-text-watermark", true)));
+
+										posicionWatermark = ":x=" + pos[0] + ":y=" + pos[1];
 
 									}
 
-									switch (opcion) {
+								}
 
-									case 3:
+								String fps = "[0]fps=25";
 
-										bn = bn.substring(1);
+								String scale = "";
 
-										try {
+								String fontsize = "250";
 
-											if (Integer.parseInt(posWatermarkX) > -1
-													&& Integer.parseInt(posWatermarkY) > -1) {
+								String colorWatermark = "black";
 
-												command.add(fps + blur + "[1]scale=" + widthWatermark + ":"
-														+ heightWatermark + "[watermark];[blurred][watermark]overlay=x="
-														+ posWatermarkX + ":y=" + posWatermarkY + ":format=auto," + bn
-														+ crop + ",drawtext=text='" + texto + "':fontsize=" + fontsize
-														+ fuente + ":fontcolor=" + colorWatermark + posicionWatermark
-														+ ",split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse");
+								String texto = "";
 
-											}
+								if (!verSiguienteDato("-fps", false).equals("")) {
 
-										}
+									fps = "[0]fps=" + verSiguienteDato("-fps", true);
 
-										catch (Exception e) {
+								}
 
-											System.out.println(
-													"\nPor favor, introduce el valor de --pos-watermark asi-> 20x20\n\n");
+								if (!verSiguienteDato("-s", false).equals("")) {
 
-											fallo = true;
+									String dato = verSiguienteDato("-s", true);
 
-										}
+									dato = limpiar(dato);
 
-										break;
+									scale = ",scale=" + dato.replace("x", ":");
 
-									case 2:
+								}
 
-										command.add(fps + blur + "[blurred]" + scale.substring(1)
+								if (!verSiguienteDato("-font-size-text-watermark", false).equals("")) {
 
-												+ crop + "[gray_frame];[1]scale=" + widthWatermark + ":"
-												+ heightWatermark
-												+ ",format=rgba,colorchannelmixer=rr=0.3:rg=0.6:rb=0.1:gr=0.3:gg=0.6:gb=0.1:br=0.3:bg=0.6:bb=0.1[watermark_bw];[gray_frame]"
+									fontsize = verSiguienteDato("-font-size-text-watermark", true);
 
-												+ "[watermark_bw]overlay=W-w-" + posWatermarkX + ":H-h-" + posWatermarkY
-												+ ":format=auto,drawtext=text='" + texto + "':fontsize=" + fontsize
-												+ fuente + ":fontcolor=" + colorWatermark + ":"
-												+ "x=(w-text_w)/2:y=(h-text_h)/2"
-												+ ",split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse");
+								}
 
-										break;
+								if (!verSiguienteDato("-text-watermark", false).equals("")) {
 
-									default:
+									texto = verSiguienteDato("-text-watermark", true);
 
-										if (!posicionarWatermark) {
+								}
 
-											command.add(fps + blur + "[blurred]" + scale.substring(1)
+								if (!texto.isEmpty() && !texto.replace(" ", "").isEmpty() && fontsize.equals("0")) {
 
-													+ crop + bn + "[gray_frame];[1]scale=" + widthWatermark + ":"
-													+ heightWatermark
+									fontsize = "25";
 
-													+ "[watermark];[gray_frame][watermark]overlay=W-w-" + posWatermarkX
-													+ ":H-h-" + posWatermarkY + ":format=auto,drawtext=text='" + texto
-													+ "':fontsize=" + fontsize + fuente + ":fontcolor=" + colorWatermark
-													+ ":" + "x=(w-text_w)/2:y=(h-text_h)/2"
-													+ ",split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse");
+								}
 
-										}
+								if (!verSiguienteDato("--color-watermark-text", false).equals("")) {
 
-										else {
+									colorWatermark = verSiguienteDato("--color-watermark-text", true);
 
-											System.out.println(
-													"\nPor favor, introduce el valor de --pos-watermark asi-> 20x20\n\n");
+								}
 
-											fallo = true;
+								String posWatermarkX = "0";
 
-										}
+								String posWatermarkY = "0";
 
-										break;
+								String datoPosWatermark = verSiguienteDato("--pos-watermark", true);
+
+								datoPosWatermark = limpiar(datoPosWatermark);
+
+								if (!datoPosWatermark.equals("")) {
+
+									if (datoPosWatermark.contains("x")) {
+
+										posWatermarkX = Integer.toString((Integer.parseInt(
+												datoPosWatermark.substring(0, datoPosWatermark.indexOf("x")))));
+
+										posWatermarkY = Integer.toString((Integer.parseInt(datoPosWatermark.substring(
+												datoPosWatermark.indexOf("x") + 1, datoPosWatermark.length()))));
 
 									}
+
+									else {
+
+										posicionarWatermark = true;
+
+										String[] pos1 = saberPosicion(
+												Integer.parseInt(verSiguienteDato("--pos-watermark", true)));
+
+										posWatermarkX = pos1[0];
+
+										posWatermarkY = pos1[1];
+
+									}
+
+								}
+
+								String fuente = "";
+
+								if (!verSiguienteDato("--font-text-watermark", false).equals("")) {
+
+									String archivoFuente = verSiguienteDato("--font-text-watermark", true);
+
+									if (new File(archivoFuente).exists()) {
+
+										fuente = ":fontfile=" + archivoFuente;
+
+									}
+
+								}
+
+								String blur = ",";
+
+								if (!verSiguienteDato("-blur", false).equals("")) {
+
+									String datoBlur = verSiguienteDato("-blur", false);
+
+									int brillo = Integer.parseInt(datoBlur.substring(0, datoBlur.indexOf("x")));
+
+									int color = Integer
+											.parseInt(datoBlur.substring(datoBlur.indexOf("x") + 1, datoBlur.length()));
+
+									blur = ",boxblur=luma_radius=" + brillo + ":chroma_radius=" + color
+											+ "[blurred];[blurred]";
+
+								}
+
+								String crop = "";
+
+								if (!verSiguienteDato("-crop", false).equals("")) {
+
+									crop = calcularCrop(verSiguienteDato("-crop", true), true);
+
+								}
+
+								if (verSiguienteDato("-watermarkSize", false).equals("")) {
+
+									crop = calcularCrop(verSiguienteDato("-crop", true), false);
+
+									if (!crop.isEmpty()) {
+
+										crop += ",";
+
+									}
+
+									command.add(fps + scale + blur + crop + "overlay=x=" + posWatermarkX + ":y="
+											+ posWatermarkY + ":format=auto,drawtext=text='" + texto + "':fontsize="
+											+ fontsize + fuente + ":fontcolor=" + colorWatermark + posicionWatermark
+											+ ",split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" + bn);
 
 								}
 
 								else {
 
-									try {
+									int widthWatermark = Integer.parseInt(verSiguienteDato("-watermarkSize", true)
+											.substring(0, verSiguienteDato("-watermarkSize", true).indexOf("x")));
 
-										if (marcaDeAgua) {
+									int heightWatermark = Integer.parseInt(verSiguienteDato("-watermarkSize", true)
+											.substring(verSiguienteDato("-watermarkSize", true).indexOf("x") + 1,
+													verSiguienteDato("-watermarkSize", true).length()));
 
-											if (posicionarWatermark) {
+									if (blur.equals(",")) {
 
-												command.add(fps + scale + blur + "[1]scale=" + widthWatermark + ":"
-														+ heightWatermark + "[watermark_resized];[blurred]"
-														+ calcularCrop(verSiguienteDato("-crop", true), false)
-														+ "[blurred_cropped];[blurred_cropped][watermark_resized]"
-														+ calcularPosicionDeMarcaDeAgua(Integer
-																.parseInt(verSiguienteDato("--pos-watermark", true)))
-														+ ":format=auto,drawtext=text='" + texto + "':fontsize="
-														+ fontsize + fuente + ":fontcolor=" + colorWatermark
-														+ posicionWatermark
+										blur = "";
+
+									}
+
+									if (!blur.equals("") && marcaDeAgua) {
+
+										blur = blur.replace("[blurred];[blurred]", "[blurred];");
+
+										scale = ",scale=w="
+												+ Integer.parseInt(
+														scale.substring(scale.indexOf("=") + 1, scale.indexOf(":")))
+												+ ":h=" + Integer.parseInt(
+														scale.substring(scale.indexOf(":") + 1, scale.length()));
+
+										if (!verSiguienteDato("-bn", false).equals("")) {
+
+											int opcion = 1;
+
+											try {
+
+												opcion = Integer.parseInt(verSiguienteDato("-bn", true));
+
+											}
+
+											catch (Exception e) {
+
+											}
+
+											switch (opcion) {
+
+											case 2:
+
+												command.add(fps + blur + "[blurred]" + scale.substring(1)
+
+														+ crop + "[gray_frame];[1]scale=" + widthWatermark + ":"
+														+ heightWatermark
+														+ ",format=rgba,colorchannelmixer=rr=0.3:rg=0.6:rb=0.1:gr=0.3:gg=0.6:gb=0.1:br=0.3:bg=0.6:bb=0.1[watermark_bw];[gray_frame]"
+
+														+ "[watermark_bw]overlay=W-w-" + posWatermarkX + ":H-h-"
+														+ posWatermarkY + ":format=auto,drawtext=text='" + texto
+														+ "':fontsize=" + fontsize + fuente + ":fontcolor="
+														+ colorWatermark + ":" + "x=(w-text_w)/2:y=(h-text_h)/2"
 														+ ",split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse");
+
+												break;
+
+											case 3:
+
+												bn = bn.substring(1);
+
+												try {
+
+													if (Integer.parseInt(posWatermarkX) > -1
+															&& Integer.parseInt(posWatermarkY) > -1) {
+
+														command.add(fps + blur + "[1]scale=" + widthWatermark + ":"
+																+ heightWatermark
+																+ "[watermark];[blurred][watermark]overlay=x="
+																+ posWatermarkX + ":y=" + posWatermarkY
+																+ ":format=auto," + bn + crop + ",drawtext=text='"
+																+ texto + "':fontsize=" + fontsize + fuente
+																+ ":fontcolor=" + colorWatermark + posicionWatermark
+																+ ",split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse");
+
+													}
+
+												}
+
+												catch (Exception e) {
+
+													e.printStackTrace();
+
+													System.out.println(
+															"\nPor favor, introduce el valor de --pos-watermark asi-> 20x20\n\n");
+
+													fallo = true;
+
+												}
+
+												break;
+
+											default:
+
+												if (!posicionarWatermark) {
+
+													command.add(fps + blur + "[blurred]" + scale.substring(1)
+
+															+ crop + bn + "[gray_frame];[1]scale=" + widthWatermark
+															+ ":" + heightWatermark
+
+															+ "[watermark];[gray_frame][watermark]overlay=W-w-"
+															+ posWatermarkX + ":H-h-" + posWatermarkY
+															+ ":format=auto,drawtext=text='" + texto + "':fontsize="
+															+ fontsize + fuente + ":fontcolor=" + colorWatermark + ":"
+															+ "x=(w-text_w)/2:y=(h-text_h)/2"
+															+ ",split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse");
+
+												}
+
+												else {
+
+													System.out.println(
+															"\nPor favor, introduce el valor de --pos-watermark asi-> 20x20\n\n");
+
+													fallo = true;
+
+												}
+
+												break;
+
+											}
+
+										}
+
+										else {
+
+											if (marcaDeAgua) {
+
+												if (posicionarWatermark) {
+
+													command.add(fps + scale + blur + "[1]scale=" + widthWatermark + ":"
+															+ heightWatermark + "[watermark_resized];[blurred]"
+															+ calcularCrop(verSiguienteDato("-crop", true), false)
+															+ "[blurred_cropped];[blurred_cropped][watermark_resized]"
+															+ calcularPosicionDeMarcaDeAgua(Integer.parseInt(
+																	verSiguienteDato("--pos-watermark", true)))
+															+ ":format=auto,drawtext=text='" + texto + "':fontsize="
+															+ fontsize + fuente + ":fontcolor=" + colorWatermark
+															+ posicionWatermark
+															+ ",split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse");
+
+												}
+
+												else {
+
+													command.add(fps + scale + blur + "[1]scale=" + widthWatermark + ":"
+															+ heightWatermark + "[watermark_resized];[blurred]"
+															+ calcularCrop(verSiguienteDato("-crop", true), false)
+															+ "[blurred_cropped];[blurred_cropped][watermark_resized]"
+															+ "overlay=x=" + posWatermarkX + ":y=" + posWatermarkY
+
+															+ ":format=auto,drawtext=text='" + texto + "':fontsize="
+															+ fontsize + fuente + ":fontcolor=" + colorWatermark
+															+ posicionWatermark
+															+ ",split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse");
+												}
 
 											}
 
@@ -910,9 +1333,8 @@ public class JFfmpeg extends JFrame {
 												command.add(fps + scale + blur + "[1]scale=" + widthWatermark + ":"
 														+ heightWatermark + "[watermark_resized];[blurred]"
 														+ calcularCrop(verSiguienteDato("-crop", true), false)
-														+ "[blurred_cropped];[blurred_cropped][watermark_resized]"
-														+ "overlay=x=" + posWatermarkX + ":y=" + posWatermarkY
-
+														+ "[blurred_cropped];[blurred_cropped][watermark_resized]overlay=x="
+														+ posWatermarkX + ":y=" + posWatermarkY
 														+ ":format=auto,drawtext=text='" + texto + "':fontsize="
 														+ fontsize + fuente + ":fontcolor=" + colorWatermark
 														+ posicionWatermark
@@ -921,65 +1343,213 @@ public class JFfmpeg extends JFrame {
 
 										}
 
-										else {
-
-											command.add(fps + scale + blur + "[1]scale=" + widthWatermark + ":"
-													+ heightWatermark + "[watermark_resized];[blurred]"
-													+ calcularCrop(verSiguienteDato("-crop", true), false)
-													+ "[blurred_cropped];[blurred_cropped][watermark_resized]overlay=x="
-													+ posWatermarkX + ":y=" + posWatermarkY
-													+ ":format=auto,drawtext=text='" + texto + "':fontsize=" + fontsize
-													+ fuente + ":fontcolor=" + colorWatermark + posicionWatermark
-													+ ",split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse");
-										}
-
 									}
 
-									catch (Exception e) {
+									else if (marcaDeAgua && blur.equals("")) {
 
-										fallo = true;
+										try {
+
+											if (!bn.equals("")) {
+
+												bn = bn.substring(1);
+
+												bn += ",";
+
+												int opcion = 1;
+
+												try {
+
+													opcion = Integer.parseInt(verSiguienteDato("-bn", true));
+
+												}
+
+												catch (Exception e) {
+
+													e.printStackTrace();
+
+												}
+
+												switch (opcion) {
+
+												case 2:
+
+													command.add(fps + scale + "[base];[1]scale=w=" + widthWatermark
+															+ ":h=" + heightWatermark
+															+ ",split[watermark][alpha];[watermark]format=gray[watermark_gray];[watermark_gray]colorchannelmixer=rr=0.5:rg=0.5:rb=0.5:gr=0.5:gg=0.5:gb=0.5:br=0.5:bg=0.5:bb=0.5[watermark_bw];[watermark_bw][alpha]alphamerge[watermark_processed];[base][watermark_processed]overlay=x="
+															+ posWatermarkX + ":y=" + posWatermarkY + ":format=auto,"
+															+ "drawtext=text='" + texto + "':fontsize=" + fontsize
+															+ fuente + ":fontcolor=" + colorWatermark
+															+ posicionWatermark);
+
+													break;
+
+												case 3:
+
+													command.add(fps + scale + "[base];[1]scale=w=" + widthWatermark
+															+ ":h=" + heightWatermark
+															+ ",split[watermark][alpha];[watermark]format=gray[watermark_gray];[watermark_gray]colorchannelmixer=rr=0.5:rg=0.5:rb=0.5:gr=0.5:gg=0.5:gb=0.5:br=0.5:bg=0.5:bb=0.5[watermark_bw];[watermark_bw][alpha]alphamerge[watermark_processed];[base][watermark_processed]overlay=x="
+															+ posWatermarkX + ":y=" + posWatermarkY + ":format=auto,"
+															+ bn + "drawtext=text='" + texto + "':fontsize=" + fontsize
+															+ fuente + ":fontcolor=" + colorWatermark
+															+ posicionWatermark);
+
+													break;
+
+												default:
+
+													command.add(fps + scale + ",format=gray[gray_frame];[1]scale="
+															+ widthWatermark + ":" + heightWatermark
+
+															+ "[watermark];[gray_frame][watermark]overlay=W-w-"
+															+ posWatermarkX + ":H-h-" + posWatermarkY
+															+ ":format=auto,drawtext=text='" + texto + "':fontsize="
+															+ fontsize + fuente + ":fontcolor=" + colorWatermark + ":"
+															+ "x=(w-text_w)/2:y=(h-text_h)/2"
+															+ ",split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse");
+
+													break;
+
+												}
+
+											}
+
+											else {
+
+												command.add(fps + scale + "[base];[1]scale=w=" + widthWatermark + ":h="
+														+ heightWatermark + "[watermark];[base][watermark]overlay=x="
+														+ posWatermarkX + ":y=" + posWatermarkY
+														+ ":format=auto,drawtext=text='" + texto + "':fontsize="
+														+ fontsize + fuente + ":fontcolor=" + colorWatermark
+														+ posicionWatermark);
+
+											}
+
+										}
+
+										catch (Exception e) {
+
+											command.add(fps + scale + "[base];[1]scale=w=" + widthWatermark + ":h="
+													+ heightWatermark + "[watermark];[base][watermark]overlay=x="
+													+ posWatermarkX + ":y=" + posWatermarkY
+													+ ":format=auto,drawtext=text='" + texto + "':fontsize=" + fontsize
+													+ fuente + ":fontcolor=" + colorWatermark + posicionWatermark);
+										}
 
 									}
 
 								}
 
+								if (verSiguienteDato("-y", true).endsWith(".gif")) {
+
+									if (!marcaDeAgua) {
+
+										ponerCalidad();
+
+									}
+
+									saberSiEsGif();
+
+								}
+
+								bits();
+
+								calidad();
+
+								comando("-s");
+
+								salida = salida(salida);
+
+								if (!verSiguienteDato("-colors", false).equals("")) {
+
+									if (buenaCalidad) {
+
+										int num1 = command.indexOf("-filter_complex") + 1;
+
+										String dato = command.get(num1);
+
+										dato = dato.replace(
+												",split[a][b];[a]palettegen=stats_mode=single[p];[b][p]paletteuse=new=1",
+												",split[a][b];[a]palettegen=max_colors=256[p];[b][p]paletteuse=new=1");
+
+										command.set(num1, dato);
+
+									}
+
+									else {
+
+										int num1 = command.indexOf("-filter_complex");
+
+										int num2 = command.indexOf("[s0]palettegen");
+
+										if (num1 > -1 && num2 > -1) {
+
+											String datoColores = command.get(command.indexOf(";[s0]palettegen"));
+
+											int indice = datoColores.indexOf(";[s0]palettegen");
+
+											String cabecera = datoColores.substring(0, indice);
+
+											datoColores = cabecera + "=max_colors=256"
+													+ datoColores.substring(indice + 15, datoColores.length());
+
+											command.set(command.indexOf(";[s0]palettegen"), datoColores);
+
+										}
+
+										else if (num1 > -1) {
+
+											int indice = num1 + 1;
+
+											command.set(indice,
+													command.get(indice) + ",split[s0][s1];[s0]palettegen=max_colors="
+															+ Integer.parseInt(verSiguienteDato("-colors", true))
+															+ "[p];[s1][p]paletteuse");
+
+										}
+
+									}
+
+								}
+
+								reverse();
+
+							} catch (Exception e) {
+
+								fallo = true;
+
 							}
 
-							else if (marcaDeAgua && blur.equals("")) {
+							System.out.println(saberComandos(command));
 
-								command.add(fps + scale + "[base];[1]scale=w=" + widthWatermark + ":h="
-										+ heightWatermark + "[watermark];[base][watermark]overlay=x=" + posWatermarkX
-										+ ":y=" + posWatermarkY + ":format=auto,drawtext=text='" + texto + "':fontsize="
-										+ fontsize + fuente + ":fontcolor=" + colorWatermark + posicionWatermark);
-							}
+							try {
 
-						}
+								if (!fallo) {
 
-					}
+									ffmpeg.run(command);
 
-					catch (Exception e) {
+								}
 
-						fallo = true;
+								else {
 
-					}
+									System.out.println("\n" + ayuda + "\n\n");
 
-				}
-
-				if (verSiguienteDato("-y", true).endsWith(".gif")) {
-
-					if (!marcaDeAgua) {
-
-						if (comandos.contains("-good") || comandos.contains("-bad")) {
-
-							if (comandos.contains("-good")) {
-
-								buenaCalidad();
+								}
 
 							}
 
-							else if (comandos.contains("-bad")) {
+							catch (Exception e) {
 
-								malaCalidad();
+								e.printStackTrace();
+
+								fallo = true;
+
+								System.out.println("\n" + ayuda + "\n\n");
+
+							}
+
+							if (!fallo && folder && !salida.isEmpty()) {
+
+								abrirCarpeta("file://" + salida);
 
 							}
 
@@ -987,62 +1557,70 @@ public class JFfmpeg extends JFrame {
 
 						else {
 
-							buenaCalidad();
+							// bn
 
-						}
+							// blur
 
-					}
+							ponerCalidad();
 
-					if (marcaDeAgua) {
+							saberSiEsGif();
 
-						command.add("-c:v");
+							bits();
 
-						command.add("gif");
+							calidad();
 
-					}
+							reverse();
 
-				}
+							comando("-s");
 
-				if (!verSiguienteDato("-bits", false).equals("")) {
+							salida = salida(salida);
 
-					command.add("-b:v");
+							if (!verSiguienteDato("-colors", false).equals("")) {
 
-					command.add(verSiguienteDato("-bits", true));
+								int indice = command.indexOf("-vf") + 1;
 
-				}
+								if (!verSiguienteDato("-vf", false).equals("")) {
 
-				command.add("-q:v");
+									command.set(indice,
+											command.get(indice) + ",max_colors=" + verSiguienteDato("-colors", true));
 
-				if (!verSiguienteDato("-quality", false).equals("")) {
+								}
 
-					command.add(verSiguienteDato("-quality", true));
+							}
 
-				}
+							System.out.println(saberComandos(command));
 
-				else {
+							try {
 
-					command.add("16");
+								if (!fallo) {
 
-				}
+									ffmpeg.run(command);
 
-				comando("-s");
+								}
 
-				int busqueda = comando("-y");
+								else {
 
-				separador = saberSeparador(os);
+									System.out.println("\n" + ayuda + "\n\n");
 
-				if (busqueda == -1) {
+								}
 
-					command.add("-y");
+							}
 
-					try {
+							catch (Exception e) {
 
-						File test = new File(
-								comandos.getLast().substring(0, comandos.getLast().lastIndexOf(separador)));
+								e.printStackTrace();
 
-						if (test.isDirectory()) {
+								fallo = true;
 
-							salida = comandos.getLast();
+								System.out.println("\n" + ayuda + "\n\n");
+
+							}
+
+							if (!fallo && folder && !salida.isEmpty()) {
+
+								abrirCarpeta("file://" + salida);
+
+							}
 
 						}
 
@@ -1052,334 +1630,21 @@ public class JFfmpeg extends JFrame {
 
 						fallo = true;
 
-					}
-
-				}
-
-				else {
-
-					salida = verSiguienteDato("-y", true);
-
-				}
-
-				System.out.println(saberComandos(command));
-
-				command.add(salida);
-
-				try {
-
-					if (!fallo) {
-
-						ffmpeg.run(command);
-
-					}
-
-					else {
-
-						System.out.println("\n" + ayuda + "\n\n");
+						e.printStackTrace();
 
 					}
 
 				}
 
-				catch (Exception e) {
-
-					fallo = true;
-
-					System.out.println("\n" + ayuda + "\n\n");
-
-				}
-
-				if (!fallo && folder && !salida.isEmpty()) {
-
-					abrirCarpeta("file://" + salida);
-
-				}
-
 			}
 
-		}
+			catch (Exception e) {
 
-	}
+				fallo = true;
 
-	private String limpiar(String datoPosWatermark) {
-
-		datoPosWatermark = datoPosWatermark.replace("X", "x");
-
-		datoPosWatermark = datoPosWatermark.replace("*", "x");
-
-		return datoPosWatermark;
-
-	}
-
-	private String calcularPosicionDeMarcaDeAgua(int index) {
-
-		String resultado = "";
-
-		switch (index) {
-
-		case 1:
-
-			resultado = "overlay=x=10:y=5";
-
-			break;
-
-		case 2:
-
-			resultado = "overlay=x=(main_w-overlay_w)/2:y=5";
-
-			break;
-
-		case 3:
-
-			resultado = "overlay=x=(main_w-overlay_w-10):y=5";
-
-			break;
-
-		case 4:
-
-			resultado = "overlay=x=10:y=(main_h-overlay_h)/2";
-
-			break;
-
-		case 5:
-
-			resultado = "overlay=x=(main_w-overlay_w)/2:y=(main_h-overlay_h)/2";
-
-			break;
-
-		case 6:
-
-			resultado = "overlay=x=(main_w-overlay_w-10):y=(main_h-overlay_h)/2";
-
-			break;
-
-		case 7:
-
-			resultado = "overlay=x=10:y=(main_h-overlay_h-5)";
-
-			break;
-
-		case 8:
-
-			resultado = "overlay=x=(main_w-overlay_w)/2:y=(main_h-overlay_h-5)";
-
-			break;
-
-		default:
-
-			resultado = "overlay=main_w-overlay_w-10:main_h-overlay_h-5";
-
-			break;
-
-		}
-
-		return resultado;
-
-	}
-
-	private String saberComandos(LinkedList<String> lista) {
-
-		String salida = "ffmpeg ";
-
-		String texto;
-
-		for (int i = 0; i < lista.size(); i++) {
-
-			texto = lista.get(i).trim();
-
-			if (!texto.startsWith("-")) {
-
-				texto = "\"" + texto + "\"";
+				e.printStackTrace();
 
 			}
-
-			salida += texto + " ";
-
-		}
-
-		salida = salida.trim();
-
-		return salida;
-
-	}
-
-	private void malaCalidad() {
-
-		boolean entro = false;
-
-		if (!verSiguienteDato("-crop", false).equals("")) {
-
-			entro = true;
-
-			command.add("-vf");
-
-		}
-
-		if (entro && !verSiguienteDato("-bn", false).equals("")) {
-
-			command.add("crop=" + verSiguienteDato("-crop", true).replace("x", ":") + ",format=gray");
-
-		}
-
-		else if (entro) {
-
-			command.add("crop=" + verSiguienteDato("-crop", true).replace("x", ":"));
-
-		}
-
-		else if (!entro && !verSiguienteDato("-bn", false).equals("")) {
-
-			command.add("-vf");
-
-			command.add("format=gray");
-
-		}
-
-		else {
-
-			command.add("-pix_fmt");
-
-			command.add("rgba");
-
-		}
-
-		if (!verSiguienteDato("-width", false).equals("") && !verSiguienteDato("-height", false).equals("")) {
-
-			int ancho = Integer.parseInt(verSiguienteDato("-width", true));
-
-			int alto = Integer.parseInt(verSiguienteDato("-height", true));
-
-			if (ancho > 0 && alto > 0) {
-
-				command.add("-s");
-
-				command.add(ancho + "x" + alto);
-
-			}
-
-		}
-
-	}
-
-	private void buenaCalidad() {
-
-		command.add("-filter_complex");
-
-		String fps = "25";
-
-		if (!verSiguienteDato("-fps", false).equals("")) {
-
-			fps = verSiguienteDato("-fps", true);
-
-		}
-
-		boolean entro = false;
-
-		String ancho = verSiguienteDato("-width", true);
-
-		String alto = verSiguienteDato("-height", true);
-
-		if (ancho == null || ancho.isEmpty()) {
-
-			ancho = "720";
-
-		}
-
-		if (alto == null || alto.isEmpty() || alto.equals("-i")) {
-
-			alto = "-1";
-
-		}
-
-		String filtro = "[0:v]fps=" + fps + ",scale=w=" + ancho + ":h=" + alto
-				+ ",split[a][b];[a]palettegen=stats_mode=single[p];[b][p]paletteuse=new=1";
-
-		if (!verSiguienteDato("-crop", false).equals("")) {
-
-			filtro += calcularCrop(verSiguienteDato("-crop", true), true);
-
-		}
-
-		if (!verSiguienteDato("-bn", false).equals("")) {
-
-			entro = true;
-
-			filtro += ",format=gray[output]";
-
-		}
-
-		command.add(filtro);
-
-		if (entro) {
-
-			command.add("-map");
-
-			command.add("[output]");
-
-		}
-
-	}
-
-	public static int[] buscarPosiciones(String cadenaBuscar, String cadenaPrincipal) {
-
-		List<Integer> posiciones = new ArrayList<>();
-
-		int posicion = cadenaPrincipal.indexOf(cadenaBuscar);
-
-		while (posicion != -1) {
-
-			posiciones.add(posicion);
-
-			posicion = cadenaPrincipal.indexOf(cadenaBuscar, posicion + 1);
-
-		}
-
-		int[] resultado = new int[posiciones.size()];
-
-		for (int i = 0; i < resultado.length; i++) {
-
-			resultado[i] = posiciones.get(i);
-
-		}
-
-		return resultado;
-
-	}
-
-	private String calcularCrop(String dato, boolean coma) {
-
-		String resultado = "";
-
-		if (coma) {
-
-			resultado = ",";
-
-		}
-
-		int[] posiciones = buscarPosiciones("x", dato);
-
-		resultado += "crop=x=" + dato.substring(0, posiciones[0]) + ":h="
-				+ dato.substring(posiciones[0] + 1, posiciones[1]) + ":x=";
-
-		resultado += dato.substring(posiciones[1] + 1, posiciones[2]) + ":y="
-				+ dato.substring(posiciones[2] + 1, dato.length());
-
-		return resultado;
-
-	}
-
-	private String saberSeparador(String os2) {
-
-		if (os.contains("indows")) {
-
-			return "\\";
-
-		}
-
-		else {
-
-			return "/";
 
 		}
 

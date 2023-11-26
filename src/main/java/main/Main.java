@@ -6,11 +6,12 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 
-		String[] comandos = new String[36];
+		String[] comandos = new String[31];
 
 		comandos[0] = "-i";
 
 		comandos[1] = "/home/linux/in.mp4";
+
 		// comandos[1] = "/media/linux/DATOSWIN/00 tarjeta/eeee/DCIM/Screen
 		// Recorder/2021_09_05_02_10_35.mp4";
 
@@ -26,69 +27,70 @@ public class Main {
 
 		comandos[7] = "25";
 
-		comandos[8] = "-good";
+		comandos[8] = "-bad";
 
 		comandos[9] = "-width";
 
 		comandos[10] = "400";
 
-		comandos[11] = "-watermark";
+		comandos[11] = "--pos-watermark";
 
-		comandos[12] = "/home/linux/tijeras.png";
+		comandos[12] = "100*100";
 
-		comandos[13] = "--pos-watermark";
+		comandos[13] = "--pos-text-watermark";
 
-		comandos[14] = "100*100";
+		comandos[14] = "5";
 
-		comandos[15] = "--pos-text-watermark";
+		comandos[15] = "-text-watermark";
 
-		comandos[16] = "5";
+		comandos[16] = "Hola";
 
-		comandos[17] = "-text-watermark";
+		comandos[17] = "--color-watermark-text";
 
-		comandos[18] = "Hola";
+		comandos[18] = "red";
 
-		comandos[19] = "--color-watermark-text";
+		comandos[19] = "-s";
 
-		comandos[20] = "white";
+		comandos[20] = "1000x800";
 
-		comandos[21] = "-blur";
+		comandos[21] = "-font-size-text-watermark";
 
-		comandos[22] = "-crop";
+		comandos[22] = "50";
 
-		comandos[23] = "100x200x50x50";
+		comandos[23] = "--font-text-watermark";
 
-		comandos[24] = "-s";
+		comandos[24] = "/home/linux/0/theboldfont.ttf";
 
-		comandos[25] = "1000x800";
+//		comandos[11] = "-watermark";
+//
+//		comandos[12] = "/home/linux/tijeras.png";
 
-		comandos[26] = "-y";
+//		comandos[31] = "-watermarkSize";
+//
+//		comandos[28] = "100x100";
 
-		comandos[27] = "/home/linux/out_31.gif";
+		// comandos[21] = "-blur";
 
-		comandos[28] = "-font-size-text-watermark";
+		comandos[25] = "-crop";
 
-		comandos[29] = "50";
+		comandos[26] = "100x200x50x50";
 
-		comandos[30] = "-watermarkSize";
+		comandos[27] = "-colors";
 
-		comandos[31] = "1000x800";
+		comandos[28] = "256";
 
-		comandos[32] = "-bn";
+		comandos[29] = "-bn";
 
-		comandos[33] = "2";
-
-		comandos[34] = "--font-text-watermark";
-
-		comandos[35] = "/home/linux/0/theboldfont.ttf";
+		comandos[30] = "/home/linux/out_41.gif";
 
 		// comandos[6] = "-width";
 
-		// comandos[7] = Integer.toString(ancho.getValor());
+		// comandos[7] = Integer.toString(ancho. cambia el número de colores a un gif en
+		// ffmpeg?getValor());
 		// comandos[25] = "/media/linux/DATOSWIN/00 tarjeta/eeee/DCIM/Screen
 		// Recorder/BLANCO_Y_NEGRO_3.gif";
 
-		new JFfmpeg().jffmpeg(comandos, true);
+		new JFfmpeg(comandos, true);
 
 	}
 
