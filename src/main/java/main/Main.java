@@ -6,14 +6,11 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 
-		String[] comandos = new String[31];
+		String[] comandos = new String[19];
 
 		comandos[0] = "-i";
 
-		comandos[1] = "/home/linux/in.mp4";
-
-		// comandos[1] = "/media/linux/DATOSWIN/00 tarjeta/eeee/DCIM/Screen
-		// Recorder/2021_09_05_02_10_35.mp4";
+		comandos[1] = "C:\\Users\\7\\Documents\\in.mp4";
 
 		comandos[2] = "-ss";
 
@@ -22,66 +19,73 @@ public class Main {
 		comandos[4] = "-t";
 
 		comandos[5] = "1.0";
-
-		comandos[6] = "-fps";
-
-		comandos[7] = "25";
-
-		comandos[8] = "-bad";
-
-		comandos[9] = "-width";
-
-		comandos[10] = "400";
-
-		comandos[11] = "--pos-watermark";
-
-		comandos[12] = "100*100";
-
-		comandos[13] = "--pos-text-watermark";
-
-		comandos[14] = "5";
-
-		comandos[15] = "-text-watermark";
-
-		comandos[16] = "Hola";
-
-		comandos[17] = "--color-watermark-text";
-
-		comandos[18] = "red";
-
-		comandos[19] = "-s";
-
-		comandos[20] = "1000x800";
-
-		comandos[21] = "-font-size-text-watermark";
-
-		comandos[22] = "50";
-
-		comandos[23] = "--font-text-watermark";
-
-		comandos[24] = "/home/linux/0/theboldfont.ttf";
-
-//		comandos[11] = "-watermark";
 //
-//		comandos[12] = "/home/linux/tijeras.png";
+//		comandos[6] = "-fps";
+//
+//		comandos[7] = "25";
+
+//		comandos[9] = "-width";
+//
+//		comandos[10] = "400";
+//
+//		comandos[11] = "--pos-watermark";
+//
+//		comandos[12] = "100*100";
+//
+//		comandos[13] = "--pos-text-watermark";
+//
+//		comandos[14] = "5";
+//
+//		comandos[9] = "-text-watermark";
+//
+//		comandos[10] = "Hola";
+
+//		comandos[17] = "--color-watermark-text";
+//
+//		comandos[18] = "red";
+//
+//		comandos[11] = "-s";
+//
+//		comandos[12] = "1000x800";
+////
+//		comandos[7] = "-font-size-text-watermark";
+//
+//		comandos[8] = "50";
+//
+//		comandos[9] = "--font-text-watermark";
+//
+//		comandos[10] = "C:\\Users\\7\\Documents\\nueva carpeta\\SecretST.ttf";
+
+		comandos[6] = "-watermark";
+		comandos[7] = "C:\\Users\\7\\Downloads\\engranaje.png";
 
 //		comandos[31] = "-watermarkSize";
 //
 //		comandos[28] = "100x100";
 
-		// comandos[21] = "-blur";
+//		comandos[25] = "--text-box";
+//
+//		comandos[26] = "1x#0000ff@0.5x20";
 
-		comandos[25] = "-crop";
+//		comandos[6] = "-crop";
+//
+//		comandos[7] = "100x200x50x50";
 
-		comandos[26] = "100x200x50x50";
+		comandos[8] = "-s";
 
-		comandos[27] = "-colors";
+		comandos[9] = "500x600";
 
-		comandos[28] = "256";
+		comandos[10] = "-rotate";
 
-		comandos[29] = "-bn";
+		comandos[11] = "1x2"; // o #45
 
-		comandos[30] = "/home/linux/out_41.gif";
+		comandos[12] = "-voltear";
+
+		comandos[13] = "1";
+
+		comandos[14] = "-loop";
+
+		comandos[15] = "1";
 
 		// comandos[6] = "-width";
 
@@ -89,6 +93,16 @@ public class Main {
 		// ffmpeg?getValor());
 		// comandos[25] = "/media/linux/DATOSWIN/00 tarjeta/eeee/DCIM/Screen
 		// Recorder/BLANCO_Y_NEGRO_3.gif";
+
+		comandos[16] = "-bad";
+
+		comandos[17] = "-bn";
+
+//		comandos[17] = "-text-watermark";
+//
+//		comandos[18] = "Hola";
+
+		comandos[18] = "C:\\Users\\7\\Documents\\out.gif";
 
 		new JFfmpeg(comandos, true);
 
