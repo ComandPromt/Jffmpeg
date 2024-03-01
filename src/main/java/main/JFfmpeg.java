@@ -3,6 +3,7 @@ package main;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -532,9 +533,12 @@ public class JFfmpeg extends JFrame {
 
 				String dato = command.get(num1);
 
-				command.set(num1, dato.substring(0, dato.indexOf(",") + 1) + tipoRotacion()
-						+ dato.substring(dato.indexOf(","), dato.length()));
+				try {
+					command.set(num1, dato.substring(0, dato.indexOf(",") + 1) + tipoRotacion()
+							+ dato.substring(dato.indexOf(","), dato.length()));
+				} catch (Exception e) {
 
+				}
 			}
 
 			else {
@@ -601,6 +605,18 @@ public class JFfmpeg extends JFrame {
 
 						int index = command.indexOf("-vf") + 1;
 
+						if (index == command.size()) {
+
+							index--;
+
+						}
+
+						System.out.println("entro aaa " + command.get(index));
+
+						if (command.get(index).equals("-vf")) {
+
+						}
+
 						command.set(index, command.get(index) + "," + tipoRotacion());
 
 					}
@@ -619,43 +635,51 @@ public class JFfmpeg extends JFrame {
 
 		String resultado = "";
 
-		if (rotacion.contains("#")) {
+		try {
 
-			rotacion = rotacion.replace("#", "");
+			if (rotacion.contains("#")) {
 
-			resultado = "rotate=" + rotacion + "*PI/180";
+				rotacion = rotacion.replace("#", "");
+
+				resultado = "rotate=" + rotacion + "*PI/180";
+
+			}
+
+			else {
+
+				int giro = Integer.parseInt(rotacion.substring(rotacion.indexOf("x") + 1, rotacion.length()));
+
+				switch (Integer.parseInt(rotacion.substring(0, rotacion.indexOf("x")))) {
+
+				case 2:
+
+					resultado = "transpose=1,transpose=1";
+
+					break;
+
+				default:
+
+					if (giro > 1) {
+
+						resultado = "transpose=2";
+
+					}
+
+					else {
+
+						resultado = "transpose=1";
+
+					}
+
+					break;
+
+				}
+
+			}
 
 		}
 
-		else {
-
-			int giro = Integer.parseInt(rotacion.substring(rotacion.indexOf("x") + 1, rotacion.length()));
-
-			switch (Integer.parseInt(rotacion.substring(0, rotacion.indexOf("x")))) {
-
-			case 2:
-
-				resultado = "transpose=1,transpose=1";
-
-				break;
-
-			default:
-
-				if (giro > 1) {
-
-					resultado = "transpose=2";
-
-				}
-
-				else {
-
-					resultado = "transpose=1";
-
-				}
-
-				break;
-
-			}
+		catch (Exception e) {
 
 		}
 
@@ -667,17 +691,51 @@ public class JFfmpeg extends JFrame {
 
 		if (!verSiguienteDato("-reverse", false).equals("")) {
 
-			int num1 = command.indexOf("-filter_complex") + 1;
+			int num1 = 0;
 
-			if (!buenaCalidad && num1 > -1) {
+			if (!buenaCalidad) {
 
-				command.set(num1, command.get(num1) + ",reverse");
+				if (!command.contains("-vf")) {
+
+					command.add("-vf");
+
+				}
+
+				num1 = command.indexOf("-vf") + 1;
 
 			}
 
 			else {
 
-				command.set(num1, command.get(num1) + ",[reversed];[reversed]reverse");
+				if (!command.contains("-filter_complex")) {
+
+					command.add("-filter_complex");
+
+				}
+
+				num1 = command.indexOf("-filter_complex") + 1;
+
+			}
+
+			if (!buenaCalidad) {
+
+				if (num1 == command.size()) {
+
+					command.add("reverse");
+
+				}
+
+				else {
+
+					command.set(num1, command.get(num1) + ",reverse");
+
+				}
+
+			}
+
+			else {
+
+				command.set(num1, command.get(num1) + "[reversed];[reversed]reverse");
 
 			}
 
@@ -813,9 +871,13 @@ public class JFfmpeg extends JFrame {
 
 		else if (!entro && !verSiguienteDato("-bn", false).equals("")) {
 
-			command.add("-vf");
+			int indice = command.indexOf("vf");
 
-			command.add("format=gray");
+			if (indice > 0) {
+
+				command.add(indice, "format=gray");
+
+			}
 
 		}
 
@@ -880,11 +942,12 @@ public class JFfmpeg extends JFrame {
 		ancho = ancho.replace("i", "1");
 
 		String filtro = "[0:v]fps=" + fps + ",scale=w=" + ancho + ":h=" + alto
-				+ ",split[a][b];[a]palettegen=stats_mode=single[p];[b][p]paletteuse=new=1";
+				+ ",split=2[a][b];[a]palettegen=stats_mode=single[p];[b][p]paletteuse=new=1";
 
 		if (!verSiguienteDato("-crop", false).equals("")) {
 
-			filtro += calcularCrop(verSiguienteDato("-crop", true), true);
+			filtro = "[0:v]fps=" + fps + calcularCrop(verSiguienteDato("-crop", true), true) + ",scale=w=" + ancho
+					+ ":h=" + alto + ",split=2[a][b];[a]palettegen=stats_mode=single[p];[b][p]paletteuse=new=1";
 
 		}
 
@@ -1297,7 +1360,6 @@ public class JFfmpeg extends JFrame {
 //				break;
 //
 //			}
-//
 
 	}
 
@@ -1365,11 +1427,7 @@ public class JFfmpeg extends JFrame {
 
 			try {
 
-				for (int i = 0; i < args.length; i++) {
-
-					comandos.add(args[i]);
-
-				}
+				comandos = new LinkedList<>(Arrays.asList(args));
 
 				if (comandos.contains("-h") || comandos.contains("-help")) {
 
@@ -1478,16 +1536,20 @@ public class JFfmpeg extends JFrame {
 							else {
 
 								posicionarWatermark = true;
+
 								try {
+
 									String[] pos1 = saberPosicion(
 											Integer.parseInt(verSiguienteDato("--pos-watermark", true)));
 
 									posWatermarkX = pos1[0];
 
 									posWatermarkY = pos1[1];
+
 								} catch (Exception e) {
 
 								}
+
 							}
 
 						}
@@ -1626,9 +1688,6 @@ public class JFfmpeg extends JFrame {
 											+ ":fontsize=" + fontsize + box + ":fontcolor=" + colorWatermark
 											+ posicionTextWatermark
 											+ ",split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" + bn);
-									System.out.println(command);
-
-									// test
 
 								}
 
@@ -1933,6 +1992,8 @@ public class JFfmpeg extends JFrame {
 
 								}
 
+								ponerContador();
+
 								if (!verSiguienteDato("-colors", false).equals("")) {
 
 									if (buenaCalidad) {
@@ -2079,22 +2140,22 @@ public class JFfmpeg extends JFrame {
 
 									default:
 
-										String datoFps = "";
+										if (!texto.isEmpty()) {
 
-										String textoBn = "split[a][b];[a]palettegen=stats_mode=single[p];[b][p]paletteuse=new=1[gif];[gif]colorchannelmixer=rr=0.3:rg=0.6:rb=0.1:gr=0.3:gg=0.6:gb=0.1:br=0.3:bg=0.6:bb=0.1[bw];[0:v][bw]overlay=format=auto[video_with_overlay];[video_with_overlay]";
+											String busqueda = "-filter_complex";
 
-										if (!verSiguienteDato("-fps", false).equals("")) {
+											if (command.contains("-vf")) {
 
-											textoBn = "," + textoBn;
+												busqueda = "-vf";
 
-											datoFps = "[0:v]fps=" + verSiguienteDato("-fps", true);
+											}
+
+											command.set(indice,
+													command.get(command.indexOf(busqueda) + 1) + ",drawtext=text='"
+															+ texto + "'" + fuente + ":fontsize=" + fontsize + box
+															+ ":fontcolor=" + colorWatermark + posicionTextWatermark);
 
 										}
-
-										command.set(indice,
-												datoFps + textoBn + "drawtext=text='" + texto + "'" + fuente
-														+ ":fontsize=" + fontsize + box + ":fontcolor=" + colorWatermark
-														+ posicionTextWatermark);
 
 										cambiar = false;
 
@@ -2102,13 +2163,55 @@ public class JFfmpeg extends JFrame {
 
 									}
 
-									if (!cambiar && !verSiguienteDato("-colors", false).equals("")) {
+									String dato = command.get(indice);
 
-										String dato = command.get(indice);
+									if (!verSiguienteDato("-colors", false).equals("")) {
 
-										dato = dato.substring(0, dato.indexOf("[a]palettegen=") + 14) + "max_colors="
-												+ verSiguienteDato("-colors", true) + ":"
-												+ dato.substring(dato.indexOf("stats_mode=single"), dato.length());
+										if (!cambiar) {
+
+											try {
+
+												dato = dato.substring(0, dato.indexOf("[a]palettegen=") + 14)
+														+ "max_colors=" + verSiguienteDato("-colors", true) + ":"
+														+ dato.substring(dato.indexOf("stats_mode=single"),
+																dato.length());
+
+											}
+
+											catch (Exception e) {
+
+												ponerModoSingle(indice, dato);
+
+											}
+
+										}
+
+										else {
+
+											ponerModoSingle(indice, dato);
+
+										}
+
+									}
+
+									if (cambiar) {
+
+										System.out.println("aaaaaaaaaaaaaaaaaaa " + dato);
+
+										ponerModoSingle(indice, dato);
+
+										dato = command.get(indice);
+
+										if (comandos.contains("-crop")) {
+
+											String texto2 = dato.substring(dato.indexOf("[output]format=gray") + 19,
+													dato.length());
+
+											dato = dato.substring(0, dato.indexOf("[output]format=gray") + 19)
+													+ "[cropped];[cropped]crop=w=100:h=200:x=50:y=50,split=2[c][d];[c][d]overlay=format=auto"
+													+ texto2;
+
+										}
 
 										command.set(indice, dato);
 
@@ -2117,6 +2220,29 @@ public class JFfmpeg extends JFrame {
 								}
 
 								else {
+									System.out.println("ENTROOOOOOOOOOOOOOOOOOOOO");
+//									if (!cambiar && !verSiguienteDato("-colors", false).equals("")) {
+//
+//										String dato = command.get(indice);
+//
+//										try {
+//											System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+//											dato = dato.substring(0, dato.indexOf("[a]palettegen=") + 14)
+//													+ "max_colors=" + verSiguienteDato("-colors", true) + ":"
+//													+ dato.substring(dato.indexOf("stats_mode=single"), dato.length());
+//
+//											command.set(indice, dato);
+//
+//										}
+//
+//										catch (Exception e) {
+//											System.out.println("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+//											command.set(indice, dato.replace("max_colors=16", "max_colors="
+//													+ verSiguienteDato("-colors", true) + ":stats_mode=single"));
+//
+//										}
+//
+//									}
 
 									ponerFiltro("-vf", "format=gray", true);
 
@@ -2208,8 +2334,6 @@ public class JFfmpeg extends JFrame {
 									dato += ",colorchannelmixer=rr=0.3:rg=0.59:rb=0.11:gr=0.3:gg=0.59:gb=0.11:br=0.3:bg=0.59:bb=0.11";
 
 								}
-
-								System.out.println(command);
 
 								if (buenaCalidad) {
 
@@ -2324,16 +2448,26 @@ public class JFfmpeg extends JFrame {
 
 							}
 
+							if (cambiar && verSiguienteDato("-watermark", false).equals("")) {
+
+								String dato = command.get(indice);
+
+								dato = dato.replace(
+										",colorchannelmixer=rr=0.3:rg=0.59:rb=0.11:gr=0.3:gg=0.59:gb=0.11:br=0.3:bg=0.59:bb=0.11",
+										"");
+
+								command.set(indice, dato);
+
+							}
+
 						}
 
-						System.out.println(command);
-
 						reverse();
-						System.out.println("1 " + command);
+
 						volteo();
-						System.out.println("2 " + command);
+
 						rotate();
-						System.out.println("3 " + command);
+
 						if (imagen) {
 
 							salida = comandos.getLast();
@@ -2346,6 +2480,21 @@ public class JFfmpeg extends JFrame {
 
 						}
 
+						ponerContador();
+
+						if (command.contains("-filter_complex")) {
+
+							String dato = command.get(command.indexOf("-filter_complex") + 1);
+
+							if (dato.contains("scale=w=-1:h=-1")) {
+
+								command.set(command.indexOf("-filter_complex") + 1,
+										dato.replace("scale=w=-1:h=-1,", ""));
+
+							}
+
+						}
+
 						System.out.println(saberComandos(command));
 
 						try {
@@ -2354,8 +2503,16 @@ public class JFfmpeg extends JFrame {
 
 								ffmpeg.run(command);
 
-								Runtime.getRuntime().exec(
-										"gifsicle -i " + command.getLast() + " --optimize=3 -o " + command.getLast());
+								try {
+
+									Runtime.getRuntime().exec("gifsicle -i " + command.getLast() + " --optimize=3 -o "
+											+ command.getLast());
+
+								}
+
+								catch (Exception e) {
+
+								}
 
 							}
 
@@ -2398,6 +2555,32 @@ public class JFfmpeg extends JFrame {
 				e.printStackTrace();
 
 			}
+
+		}
+
+	}
+
+	private void ponerModoSingle(int indice, String dato) {
+
+		String salidaDato = dato.substring(dato.indexOf("[p];[b][p]paletteuse"), dato.length());
+
+		dato = dato.substring(0, dato.indexOf("[a]palettegen=") + 14) + "max_colors="
+				+ verSiguienteDato("-colors", true) + ":" + "stats_mode=single" + salidaDato;
+
+		command.set(indice, dato);
+	}
+
+	private void ponerContador() {
+
+		if (!verSiguienteDato("-loop", false).equals("")) {
+
+			String archivo = command.get(command.indexOf("-y") + 1);
+
+			command.set(command.size() - 1, "-loop");
+
+			command.add(verSiguienteDato("-loop", true));
+
+			command.add(archivo);
 
 		}
 
@@ -2455,7 +2638,7 @@ public class JFfmpeg extends JFrame {
 
 					}
 
-					else if (!command.contains("-filter_complex")) {
+					else if (!command.contains("-filter_complex") && !command.contains("-vf")) {
 
 						command.add("-vf");
 
@@ -2479,13 +2662,46 @@ public class JFfmpeg extends JFrame {
 						command.add(command.get(index).substring(0, command.get(index).indexOf(",") + 1) + dato + ","
 								+ command.get(index).substring(command.get(index).indexOf(",") + 1,
 										command.get(index).length()));
+
 					}
 
 					else {
 
+						if (!command.contains("-vf")) {
+
+							command.add("-vf");
+
+						}
+
 						index = command.indexOf("-vf") + 1;
 
-						command.add(index, dato);
+						if (index == command.size()) {
+
+							index--;
+
+						}
+
+						if (!command.get(index).isEmpty()) {
+
+							if (!command.get(index).isEmpty()) {
+
+								command.set(index, command.get(index) + "," + dato);
+
+							}
+
+							else {
+
+								command.add(index, dato);
+
+							}
+
+						}
+
+						else {
+
+							command.set(index, dato);
+
+						}
 
 					}
 
